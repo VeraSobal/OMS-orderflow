@@ -1,0 +1,47 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Main{% endblock %}
+
+{% block content %}
+<form action="{% url 'exportreporttoexcel' %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="data" value="{{ data|safe }}">
+    <button type="submit" class="btn btn-outline-dark btn-sm" data-toggle="tooltip" title="Export to Excel">
+        <i class="bi bi-file-earmark-spreadsheet"></i>
+    </button>
+</form>
+<table class="table table-light table-hover">
+    <small>
+        <tr>
+            {% if data %}
+            <th class="col-auto">Product</th>
+            <th class="col-auto">Confirmation</th>
+            <th class="col-auto">Order</th>
+            <th class="col-auto">Client</th>
+            <th class="col-auto">Quantity</th>
+            {% endif %}
+        </tr>
+        {% for item in data %}
+        <tr>
+            <td>
+                <small>{{ item.product}}</small><br>
+            </td>
+            <td>
+                <small>{{ item.confirmation }}</small><br>
+            </td>
+            <td>
+                <small>{{ item.order }}</small><br>
+            </td>
+            <td>
+                <small>{{ item.client }}</small><br>
+            </td>
+            <td>
+                <small>{{ item.quantity }}</small><br>
+            </td>
+        </tr>
+        {% empty %}
+        <li class="list-group-item">No orders</li>
+        {% endfor %}
+    </small>
+</table>
+{% endblock %}

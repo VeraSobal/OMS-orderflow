@@ -1,0 +1,105 @@
+services:
+  redis:
+    image: redis:8.0.2
+    container_name: redis
+    hostname: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    networks:
+      - orderflow-network
+
+  db:
+    image: postgres:17
+    container_name: postgres
+    hostname: db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${ORDERFLOW_CONFIG__DB_NAME}
+      POSTGRES_USER: ${ORDERFLOW_CONFIG__DB_USER}
+      POSTGRES_PASSWORD: ${ORDERFLOW_CONFIG__DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${ORDERFLOW_CONFIG__DB_USER} -d ${ORDERFLOW_CONFIG__DB_NAME}"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - orderflow-network
+
+  orderflow:
+    build:
+      dockerfile: ./docker-build/orderflow/Dockerfile
+      context: .
+    container_name: orderflow
+    hostname: orderflow
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: ${ORDERFLOW_CONFIG__DJANGO_SECRET_KEY}
+      DJANGO_SUPERUSER_USERNAME: ${ORDERFLOW_CONFIG__DJANGO_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_PASSWORD: ${ORDERFLOW_CONFIG__DJANGO_SUPERUSER_PASSWORD}
+      DJANGO_SUPERUSER_EMAIL: ${ORDERFLOW_CONFIG__DJANGO_SUPERUSER_EMAIL}
+      DEBUG: ${ORDERFLOW_CONFIG__DJANGO_DEBUG}
+      ORDERFLOW_CONFIG__DB_USER: ${ORDERFLOW_CONFIG__DB_USER}
+      ORDERFLOW_CONFIG__DB_PASSWORD: ${ORDERFLOW_CONFIG__DB_PASSWORD}
+      ORDERFLOW_CONFIG__DJANGO_DEBUG: False
+      ORDERFLOW_CONFIG__DB_HOST: db
+    env_file:
+      - ./.env
+    command:
+      - gunicorn
+      - config.wsgi:application
+      - --workers
+      - "2"
+      - --bind
+      - 0.0.0.0:8000
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 6
+    volumes:
+      - static_data:/home/app/staticfiles
+    ports:
+      - "8000:8000"
+    networks:
+      - orderflow-network
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  nginx:
+    build: 
+      dockerfile: ./docker-build/nginx/Dockerfile
+      context: .
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "1337:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - static_data:/home/app/staticfiles
+    networks:
+      - orderflow-network
+    depends_on:
+      - orderflow
+
+networks:
+  orderflow-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static_data:

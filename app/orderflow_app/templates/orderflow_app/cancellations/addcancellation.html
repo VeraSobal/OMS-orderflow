@@ -1,0 +1,16 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" class="mt-4 mb-5" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if not preview_hidden %}
+    <button type="submit" class="btn btn-secondary" id="previewBtn" name="action" value="preview">Preview</button>
+    {% endif %}
+    <button type="submit" {% if add_confirmation_disabled %}disabled{% endif %} class="btn btn-primary"
+        id="addConfirmationBtn" name="action" value="add">Add cancellation</button>
+</form>
+
+{% endblock %}

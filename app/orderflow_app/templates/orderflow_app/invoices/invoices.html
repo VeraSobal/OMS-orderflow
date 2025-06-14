@@ -1,0 +1,48 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+<table class="table table-light table-hover">
+    <small>
+        <tr>
+
+            <th class="col-auto">
+                <button type="button" class="btn btn-outline-success btn-sm"
+                    onclick="location.href='{% url 'addinvoice' %}'">
+                    <i class="bi bi-plus-square"></i>
+                </button>
+            </th>
+            {% if invoices %}
+            <th class="col-auto">Invoices</th>
+            {% endif %}
+        </tr>
+        {% for invoice in invoices %}
+        <tr>
+            <td>
+                <div style="display: flex; gap: 5px;">
+                    <form action="{% url 'deleteinvoice' invoice.pk %}" method="POST"
+                        onsubmit="return confirm('Do you really want to delete invoice {{ invoice.pk }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-x-square"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+            <td>
+                <li class="list-group-item">
+                    <a href="{% url 'viewinvoice' invoice.pk %}">
+                        <p>{{ invoice.name }}</p>
+                    </a>
+                    <small>Id: {{ invoice.id }}</small><br>
+                    <small>{% if invoice.comment %}Comment: {{ invoice.comment }}{% else %}-{% endif %}</small>
+                </li>
+            </td>
+        </tr>
+        {% empty %}
+        <li class="list-group-item">No invoices</li>
+        {% endfor %}
+    </small>
+</table>
+{% endblock %}

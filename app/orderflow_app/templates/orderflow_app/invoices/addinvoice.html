@@ -1,0 +1,51 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<form method="post" class="mt-4 mb-5" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ loadform.as_p }}
+    {{ form.as_p }}
+    {% if not preview_hidden %}
+    <button type="submit" class="btn btn-secondary" id="previewBtn" name="action" value="preview">Preview</button>
+    {% endif %}
+    <button type="submit" {% if add_invoice_disabled %}disabled{% endif %} class="btn btn-primary" id="addinvoiceBtn"
+        name="action" value="add">Add invoice</button>
+</form>
+<div class="file-data" data-invoicedata="{{ invoicedata | safe }}">
+    <pre>{{ invoicedata }}</pre>
+</div>
+
+<script>
+    const fileInput = document.querySelector('input[name="file"]');
+    const nameInput = document.querySelector('input[name="name"]');
+    const invoice_dateInput = document.querySelector('input[name="invoice_date"]');
+    const supplierInput = document.querySelector('select[name="supplier"]');
+    const addInvoiceBtn = document.getElementById('addinvoiceBtn');
+
+    fileInput.addEventListener('change', function () {
+        const label = this.previousElementSibling;
+        const fileNameFull = this.files[0]?.name;
+        const fileName = fileNameFull?.replace(/\.[^/.]+$/, "")
+        nameInput.value = fileNameFull;
+        nameInput.setAttribute('placeholder', '');
+
+        const dateString = fileName.match(/(\d{6})/);
+        if (dateString && dateString.length > 0) {
+            const dateValue = dateString[1];
+            const day = dateValue.slice(0, 2);
+            const month = dateValue.slice(2, 4);
+            const year = "20" + dateValue.slice(4);
+            const formattedDate = `${year}-${month}-${day}`;
+            invoice_dateInput.value = formattedDate;
+        }
+        invoice_dateInput.setAttribute('placeholder', '');
+
+        document.querySelector('.file-data pre').textContent = '';
+        document.querySelector('.file-data').dataset.invoicedata = '';
+        addOrderBtn.disabled = true;
+    })
+</script>
+
+{% endblock %}

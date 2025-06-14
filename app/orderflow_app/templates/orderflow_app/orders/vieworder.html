@@ -1,0 +1,81 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Orders{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 10px;">
+    <li class="list-group-item">
+        {% for confirmation in order_form.instance.confirmations.all %}
+        <small><a style="color: grey;" href="{% url 'viewconfirmation' confirmation.pk %}" class="order-link">
+                {{ confirmation.confirmation_code }} {{ confirmation.name }}
+            </a></small><br>
+        {% empty %}
+        <small>No confirmations</small>
+        {% endfor %}
+    </li>
+</div>
+<div style="display: flex; flex-direction: column; gap: 5px;">
+    <div style="display: flex; flex-direction: row; gap: 5px;">
+        <form action="{% url 'orders' %}" method="GET">
+            <button type="submit" class="btn btn-outline-warning btn-sm" data-toggle="tooltip" title="Go to Orders">
+                <i class="bi bi-list"></i>
+            </button>
+        </form>
+        <form action="{% url 'deleteorder' order_form.instance.pk %}" method="POST"
+            onsubmit="return confirm('Do you really want to delete order {{ order_form.instance.pk }}?');"
+            style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-x-square"></i>
+            </button>
+        </form>
+        <form action="" method="POST">
+            {% csrf_token %}
+            <button type="submit" hidden class="btn btn-outline-dark btn-sm">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+            </button>
+        </form>
+        <form action="{% url 'editorder' order_form.instance.pk %}">
+            <button type="submit" {% if not view_order %}class="invivsible" disabled {% endif %}
+                class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+        </form>
+        <form action="{% url 'editorder' order_form.instance.pk %}" method="POST"">
+        <button type=" submit" {% if view_order %}class="invivsible" disabled {% endif %}
+            class="btn btn-outline-success btn-sm" name="save">
+            <i class="bi bi-check-square"></i>
+            </button>
+    </div>
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {{ order_form.as_p }}
+    <p class="col-auto text-danger">Total quantity: {{ order_form.instance.total_quantity|floatformat:"g" }}</p>
+
+    <table class="table table-hover">
+        <small>
+            <tr>
+                {% if formset %}
+                {% for field in formset.form %}
+                <th class="col-auto">{{ field.label }}</th>
+                {% endfor %}
+                {% endif %}
+            </tr>
+            {% for form in formset %}
+            <tr>
+                {% for field in form %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ formset.form.field_count }}" class="text-center">
+                    <li class="list-group-item">No items</li>
+                </td>
+            </tr>
+            {% endfor %}
+        </small>
+    </table>
+    </form>
+</div>
+{% endblock %}

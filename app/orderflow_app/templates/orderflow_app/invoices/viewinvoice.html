@@ -1,0 +1,89 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; gap: 5px;">
+    <div style="display: flex; flex-direction: row; gap: 5px;">
+        <form action="{% url 'invoices' %}" method="GET">
+            <button type="submit" class="btn btn-outline-warning btn-sm" data-toggle="tooltip" title="Go to Invoices">
+                <i class="bi bi-list"></i>
+            </button>
+        </form>
+        <form action="{% url 'deleteinvoice' invoice_form.instance.pk %}" method="POST"
+            onsubmit="return confirm('Do you really want to delete invoice {{ invoice_form.instance.pk }}?');"
+            style="display: inline-block;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm" data-toggle="tooltip" title="Delete">
+                <i class="bi bi-x-square"></i>
+            </button>
+        </form>
+        <form action="{% url 'exportinvoicetoexcel' invoice_form.instance.pk %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-dark btn-sm" data-toggle="tooltip" title="Export to Excel">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+            </button>
+        </form>
+        <form action="{% url 'editinvoice' invoice_form.instance.pk %}">
+            <button type="submit" {% if not view_invoice %}class="invivsible" disabled {% endif %}
+                class="btn btn-outline-primary btn-sm" data-toggle="tooltip" title="Edit">
+                <i class="bi bi-pencil-square"></i>
+            </button>
+        </form>
+        <form action="{% url 'editinvoice' invoice_form.instance.pk %}" method="POST">
+            <button type=" submit" {% if view_invoice %}class="invivsible" disabled {% endif %}
+                class="btn btn-outline-success btn-sm" name="save" data-toggle="tooltip" title="Save">
+                <i class="bi bi-check-square"></i>
+            </button>
+    </div>
+    {% csrf_token %}
+    {{ formset.management_form }}
+    {{ invoice_form.as_p }}
+    <p class="col-auto  text-danger">Total amount: {{ invoice_form.instance.total_amount|floatformat:"2" }}
+    </p>
+    {{ formset.non_form_errors }}
+    <table class="table table-hover">
+        <small>
+            <tr>
+                {% if formset %}
+                {% for field in formset.form %}
+                <th class="col-auto">{{ field.label }}</th>
+                {% endfor %}
+                {% endif %}
+            </tr>
+            {% for form in formset %}
+            <tr>
+                {% for field in form %}
+                <td>{{ field }}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{{ formset.form.field_count }}" class="text-center">
+                    <li class="list-group-item">No items</li>
+                </td>
+            </tr>
+            {% endfor %}
+        </small>
+    </table>
+    </form>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const productSelects = document.querySelectorAll('[name$="-product"]');
+        productSelects.forEach(select => {
+            select.addEventListener('change', function () {
+                const selectedOption = this.options[this.selectedIndex];
+                const prefix = this.name.match(/(.*)-product/)[1];
+                const priceInput = document.querySelector(`[name="${prefix}-price"]`);
+
+                if (selectedOption.hasAttribute('data-price')) {
+                    priceInput.value = selectedOption.getAttribute('data-price');
+                } else {
+                    priceInput.value = '';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

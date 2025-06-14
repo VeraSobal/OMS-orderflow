@@ -1,0 +1,48 @@
+[
+    {
+        "model": "orderflow_app.Brand",
+        "pk": "B1",
+        "fields": {
+            "name": "Test brand B1"
+        }
+    },
+    {
+        "model": "orderflow_app.Brand",
+        "pk": "B2",
+        "fields": {
+            "name": "Test brand B2"
+        }
+    },
+    {
+        "model": "orderflow_app.Client",
+        "pk": "C1",
+        "fields": {
+            "name": "Test client C1",
+            "comment": ""
+        }
+    },
+    {
+        "model": "orderflow_app.Client",
+        "pk": "C2",
+        "fields": {
+            "name": "Test client C2",
+            "comment": ""
+        }
+    },
+    {
+        "model": "orderflow_app.Client",
+        "pk": "C3",
+        "fields": {
+            "name": "Test client C3",
+            "comment": ""
+        }
+    },
+    {
+        "model": "orderflow_app.Supplier",
+        "pk": "T00016",
+        "fields": {
+            "name": "Test supplier T00016",
+            "comment": ""
+        }
+    }
+]

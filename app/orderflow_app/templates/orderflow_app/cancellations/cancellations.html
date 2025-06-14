@@ -1,0 +1,68 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Cancellations{% endblock %}
+
+{% block content %}
+<table class="table table-light table-hover">
+    <small>
+        <tr>
+
+            <th class="col-auto">
+                <button type="button" class="btn btn-outline-success btn-sm"
+                    onclick="location.href='{% url 'addcancellation'%}'">
+                    <i class="bi bi-plus-square"></i>
+                </button>
+            </th>
+            {% if cancellations %}
+            <th class="col-auto">Date</th>
+            <th class="col-auto">Cancellation</th>
+            <th class="col-auto">Products</th>
+            {% endif %}
+        </tr>
+        {% for cancellation in cancellations %}
+        <tr>
+            <td>
+                <div style="display: flex; gap: 5px;">
+                    <form action="{% url 'deletecancellation' cancellation.pk %}" method="POST"
+                        onsubmit="return confirm('Do you really want to delete cancellation {{ cancellation.pk }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-x-square"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+            <td>
+                <li class="list-group-item">
+                    <small>{{ cancellation.cancellation_date|date:"m-d-y"}}</small><br>
+                </li>
+            </td>
+            <td>
+                <li class="list-group-item">
+                    <small>{{ cancellation.brand.name }}</small>
+                    <small>{{ cancellation.supplier.name }}</small><br>
+                    <small>{% if cancellation.comment %}Comment: {{ cancellation.comment }}{% else %}-{% endif%}</small>
+                </li>
+            </td>
+
+            <td>
+                <li class="list-group-item">
+                    {% for item in cancellation.items.all %}
+                    <small>{{ item.product.name }}</small>
+                    <small>{{ item.client.id }}</small>
+                    <small>{{ item.confirmation.id }}</small>
+                    <small>{{ item.order.name }}</small>
+                    <small>{{ item.quantity }}</small><br>
+                    {% empty %}
+                    <small>No items</small>
+                    {% endfor %}
+                </li>
+            </td>
+
+        </tr>
+        {% empty %}
+        <li class="list-group-item">No cancellations</li>
+        {% endfor %}
+    </small>
+</table>
+{% endblock %}

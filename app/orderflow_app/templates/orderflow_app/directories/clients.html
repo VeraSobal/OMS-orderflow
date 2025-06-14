@@ -1,0 +1,25 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Directories{% endblock %}
+
+{% block content %}
+<h2>Clients</h2>
+<table class="table table-light table-hover">
+    <tr>
+        {% if clients %}
+        <th class="col-auto">Id</th>
+        <th class="col-auto">Name</th>
+        <th class="col-auto">Comment</th>
+        {% endif %}
+    </tr>
+    {% for client in clients %}
+    <tr>
+        <td>{{ client.id }}</td>
+        <td>{{ client.name }}</td>
+        <td>{% if client.comment %}{{ client.comment }}{% else %}-{% endif %}</td>
+    </tr>
+    {% empty %}
+    <li class="list-group-item">No clients</li>
+    {% endfor %}
+</table>
+{% endblock %}

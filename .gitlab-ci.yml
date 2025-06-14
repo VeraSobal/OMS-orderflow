@@ -1,0 +1,41 @@
+image: python:3.12
+
+stages:
+  - testing
+  - build
+  - deploy
+
+before_script:
+  - python --version
+  - pip install --upgrade pip
+  - pip install poetry
+  - poetry install
+  - source `poetry env info --path`/bin/activate
+
+lint:
+  stage: testing
+  script:
+    - pylint $(git ls-files '*.py')
+
+test:
+  stage: testing
+  services:
+    - postgres        
+    - redis
+  variables:
+    ORDERFLOW_CONFIG__DB_USER: test-user
+    ORDERFLOW_CONFIG__DB_PASSWORD: test-password
+    ORDERFLOW_CONFIG__DB_NAME: test-db
+    ORDERFLOW_CONFIG__DB_HOST: postgres
+    POSTGRES_USER: $ORDERFLOW_CONFIG__DB_USER
+    POSTGRES_PASSWORD: $ORDERFLOW_CONFIG__DB_PASSWORD
+    POSTGRES_DB: $PORDERFLOW_CONFIG__DB_NAME
+    COVERAGE_DIR: "coverage-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHORT_SHA"
+  script:
+    - pytest app/ -s --cov --cov-report html:$COVERAGE_DIR --cov-fail-under 90
+  artifacts:
+    name: $COVERAGE_DIR
+    paths:
+      - $COVERAGE_DIR
+    when: on_success
+    expire_in: 1 week

@@ -1,0 +1,73 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Orders{% endblock %}
+
+{% block content %}
+<table class="table table-light table-hover">
+    <small>
+        <tr>
+            <th class="col-auto">
+                <button type="button" class="btn btn-outline-success btn-sm"
+                    onclick="location.href='{% url 'addorder' %}'">
+                    <i class="bi bi-plus-square"></i>
+                </button>
+            </th>
+            {% if orders %}
+            <th class="col-auto">Orders</th>
+            <th class="col-auto">Confirmations</th>
+            <th class="col-auto">Invoices</th>
+            {% endif %}
+        </tr>
+        {% for order in orders %}
+        <tr>
+            <td>
+                <div style="display: flex; gap: 5px;">
+                    <form action="{% url 'deleteorder' order.pk %}" method="POST"
+                        onsubmit="return confirm('Do you really want to delete order {{ order.pk }}?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-x-square"></i>
+                        </button>
+                    </form>
+                </div>
+            </td>
+            <td>
+                <li class="list-group-item">
+                    <a href="{% url 'vieworder' order.pk %}">
+                        <p><small>{{ order.name }}</small></p>
+                    </a>
+                    <small>Id: {{ order.id }}</small><br>
+                    <small>{% if order.comment %}Comment: {{ order.comment }}{% else %}-{% endif %}</small>
+                </li>
+            </td>
+
+            <td>
+                <li class="list-group-item">
+                    {% for confirmation in order.confirmations.all %}
+                    <a href="{% url 'viewconfirmation' confirmation.pk %}" style="color: grey; ">
+                        <p><small>{{ confirmation.name }}</small></p>
+                    </a>
+                    {% empty %}
+                    <small>No confirmations</small>
+                    {% endfor %}
+                </li>
+            </td>
+
+            <td>
+                <li class="list-group-item">
+                    {% for invoice in order.invoices %}
+                    <a href="{% url 'viewinvoice' invoice.invoice__id %}" style="color: grey; ">
+                        <p><small>{{ invoice.invoice__name }}</small></p>
+                    </a>
+                    {% empty %}
+                    <small>No invoices</small>
+                    {% endfor %}
+                </li>
+            </td>
+        </tr>
+        {% empty %}
+        <li class="list-group-item">No orders</li>
+        {% endfor %}
+    </small>
+</table>
+{% endblock %}

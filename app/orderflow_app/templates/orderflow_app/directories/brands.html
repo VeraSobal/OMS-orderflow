@@ -1,0 +1,37 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Directories{% endblock %}
+
+{% block content %}
+<h2>Brands</h2>
+<table class="table table-light table-hover">
+    <tr>
+        {% if brands %}
+        <th class="col-auto">Id</th>
+        <th class="col-auto">Name</th>
+        <th class="col-auto">Comment</th>
+        {% endif %}
+    </tr>
+    {% for brand in brands %}
+    <tr>
+        <td>{{ brand.id }}</td>
+        <td>{{ brand.name }}</td>
+        <td>
+            <li class="list-group-item">
+                {% if brand.suppliers.all %}
+                <small>Suppliers:</small>
+                {% for supplier in brand.suppliers.all %}
+                <small>| {{ supplier.name }} |</small>
+                {% empty %}
+                <small></small>
+                {% endfor %}
+                {% endif %}
+                <small>{% if brand.comment %}Comment {{ brand.comment }}{% else %}{% endif %}</small>
+            </li>
+        </td>
+    </tr>
+    {% empty %}
+    <li class="list-group-item">No brands</li>
+    {% endfor %}
+</table>
+{% endblock %}

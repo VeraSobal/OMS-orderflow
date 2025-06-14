@@ -1,0 +1,44 @@
+{% extends 'orderflow_app/base.html' %}
+
+{% block title %}Directories{% endblock %}
+
+{% block content %}
+<h2>Products</h2>
+<table class="table table-light table-hover">
+    <small>
+        <tr>
+            {% if products %}
+            <th class="col-auto">Id</th>
+            <th class="col-auto">Brand</th>
+            <th class="col-auto">Name</th>
+            <th class="col-auto">Description</th>
+            <th class="col-auto">Price</th>
+            <th class="col-auto">Supplier</th>
+            {% endif %}
+        </tr>
+        {% for product in products %}
+        <tr>
+            <td>{{ product.id}}</td>
+            <td>{{ product.brand}}</td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.description }}</td>
+            <td>
+                {% for detail in product.prefetched_details %}
+                {{ detail.price }}<br>
+                {% empty %}
+                No data
+                {% endfor %}
+            </td>
+            <td>
+                {% for detail in product.prefetched_details %}
+                {{ detail.pricelist.supplier.name }}<br>
+                {% empty %}
+                {% endfor %}
+            </td>
+        </tr>
+        {% empty %}
+        <li class="list-group-item">No products</li>
+        {% endfor %}
+    </small>
+</table>
+{% endblock %}
